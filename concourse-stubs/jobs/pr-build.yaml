@@ -1,0 +1,54 @@
+jobs:
+  - name: pr-build
+    plan:
+      - get: src
+        resource: pr-src
+        trigger: true
+        version: every
+        params:
+          fetch_tags: true
+      - in_parallel:
+          - do:
+              - put: pr-src
+                params:
+                  context: &prcontext Build and Test
+                  path: src
+                  status: pending
+      - in_parallel:
+          - task: build-java-mvn-lib
+            privileged: true
+            config:
+              platform: linux
+              image_resource:
+                type: registry-image
+                source:
+                  repository: docker-maven-jdk11-build
+              inputs:
+                - name: secrets
+                - name: tags
+                - name: src
+              outputs:
+                - name: src
+              run:
+                path: sh
+                user: root
+                args:
+                  - -cx
+                  - (( grab $BUILD_CMD ))
+      - in_parallel:
+          - put: publish-snapshot
+            params:
+              files: src/target
+              glob: "*.jar"
+    on_success:
+      put: pr-src
+      params:
+        context: *prcontext
+        path: pr-src
+        status: success
+    on_failure:
+      put: pr-src
+      params:
+        context: *prcontext
+        path: pr-src
+        status: failure

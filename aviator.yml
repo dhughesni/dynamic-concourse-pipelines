@@ -1,0 +1,11 @@
+spruce:
+- base: concourse-stubs/base.yaml
+  merge:
+  - with:
+      files:
+      - concourse-stubs/resource-types.yaml
+      - concourse-stubs/resources.yaml
+      - concourse-stubs/jobs/pr-build.yaml
+      - concourse-stubs/jobs/main-build.yaml
+      - concourse-stubs/jobs/release-build.yaml
+  to: output/$RESULT_YAML.yaml

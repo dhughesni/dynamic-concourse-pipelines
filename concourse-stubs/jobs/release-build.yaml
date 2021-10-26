@@ -1,0 +1,38 @@
+jobs:
+  - name: release-build
+    plan:
+      - get: meta
+        resource: release-meta
+        trigger: true
+        version: every
+        params:
+          include_source_tarball: true
+      - in_parallel: &buildsteps
+          - task: build-java-mvn-lib
+            privileged: true
+            config: &build_config_anchor
+              platform: linux
+              image_resource:
+                type: registry-image
+                source:
+                  repository: docker-maven-jdk11-build
+                  username: ((artifactory.username))
+                  password: ((artifactory.token))
+              inputs:
+                - name: secrets
+                - name: tags
+                - name: src
+              outputs:
+                - name: src
+              run:
+                path: sh
+                user: root
+                args:
+                  - -cx
+                  - |
+                    mvn package
+      - in_parallel:
+          - put: publish-release
+            params:
+              files: src/target
+              glob: "*.jar"

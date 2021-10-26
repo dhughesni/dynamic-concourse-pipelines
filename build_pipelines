@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+for BUILD_TYPE in "java-mvn" "python"
+do
+    export BUILD_CMD=$(cat build-cmds/$BUILD_TYPE)
+    RESULT_YAML=$BUILD_TYPE aviator
+done

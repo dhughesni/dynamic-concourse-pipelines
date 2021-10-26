@@ -1,0 +1,7 @@
+|
+python3 setup.py bdist_wheel
+pip3 install -e .[dev]
+pytest -v --junitxml=reports/pytest-report.xml --cov-branch --cov-report=term --cov=. --cov-report=term
+coverage report -m
+coverage xml -i -o reports/coverage.xml
+bandit -v --format json --output reports/bandit-report.json --recursive --exclude "./build/**,./tests/**" . || true    
